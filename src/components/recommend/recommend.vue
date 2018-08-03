@@ -8,7 +8,7 @@
     </div>
 </template>
 <script>
-    
+    import { getRecommend } from '../../api/recommend.js'
     export default {
         data() {
             return {
@@ -32,11 +32,17 @@
                 var h = 432/1080*w
                 mint.style.height = h+'px';
 
+            },
+            _getRecommend(){
+                getRecommend().then((res)=>{
+                    console.log(res);
+                })
             }
         },
         created:function(){
             this.getsilder();
-            console.dir(window.innerWidth);
+            this._getRecommend();
+            // console.dir(window.innerWidth);
         },
         mounted() {
             this.winresize();
