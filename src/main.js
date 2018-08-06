@@ -5,11 +5,15 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import Fastclick from 'fastclick'
+import VueLazyLoad from 'vue-lazyload'
 
 
 import MintUI from 'mint-ui'
 import 'mint-ui/lib/style.css'
 
+Vue.use(VueLazyLoad,{
+  loading: require('common/imgage/default.png')
+})
 Vue.use(MintUI)
 
 
