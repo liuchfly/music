@@ -1,28 +1,56 @@
 <template>
-    <div>
-        <mt-swipe :auto="2000" >
-            <mt-swipe-item v-for="item in slider" :key="item.id">
-                <img :src="item.picUrl" alt="">
-            </mt-swipe-item>
-        </mt-swipe>
-    </div>
+    <scroll class="recommend" :data="discList" ref="scroll"> 
+        <div>
+            <div class="recommend-content">
+                <div v-if="slider.length" class="slider-wrapper">
+                    <slider>
+                        <div v-for="item in slider" :key="item.id">
+                            <a :href="item.linkUrl">
+                                <img @load="loadImage" :src="item.picUrl" alt="">
+                            </a>
+                        </div>
+                    </slider>
+                </div>
+             </div>
+            <div class="recommend-list">
+                <h1 class="list-title">热门歌曲</h1>
+                <ul>
+                    <li v-for="item in discList" :key="item.imgurl" class="item">
+                        <div class="icon">
+                            <img :src="item.imgurl" height="60" width="60" alt="">
+                        </div>
+                        <div class="text">
+                            <h2 class="name" v-html="item.creator.name"></h2>
+                            <p class="desc" v-html="item.dissname"></p>
+                        </div> 
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </scroll>
 </template>
 <script>
-    import { getRecommend } from '../../api/recommend.js'
+    import Slider from 'base/slider/slider'
+    import Scroll from 'base/scroll/scroll'
+    import { getRecommend , getDiscList} from 'api/recommend'
+    import { ERR_OK } from 'api/config'
+    
     export default {
         data() {
             return {
-                slider:[]
+                slider:[],
+                discList:[]
             }
         },
         components:{
-           
+           Slider,
+           Scroll
         },
         methods:{
-            getsilder(){
-                this.$axios.get('/lunbo').then(res=>{
-                    if(res.data.code == 0){
-                        this.slider = res.data.data.slider;
+            _getPlaylist(){
+                getDiscList().then(res=>{
+                    if(res.code == ERR_OK){
+                        this.discList = res.data.list;
                     }
                 })
             },
@@ -31,36 +59,85 @@
                 var w = window.innerWidth;
                 var h = 432/1080*w
                 mint.style.height = h+'px';
-
             },
             _getRecommend(){
                 getRecommend().then((res)=>{
-                    console.log(res);
+                    if(res.code == 0){
+                        this.slider = res.data.slider;
+                    }
                 })
+            },
+            loadImage(){
+                if(this.checkLoading){
+                    this.$refs.scroll.refresh();
+                    // this.checkLoading = true;
+                }
+                
             }
         },
         created:function(){
-            this.getsilder();
+            this._getPlaylist();
             this._getRecommend();
             // console.dir(window.innerWidth);
         },
         mounted() {
-            this.winresize();
-            window.addEventListener('resize',this.winresize);
+            // this.winresize();
+            // window.addEventListener('resize',this.winresize);
         },
     }
 </script>
 <style lang="less" scoped>
-.mint-swipe{
+.recommend{
+    position:fixed;
+    top:88px;
+    bottom:0;
+    width:100%;
+    z-index: -1;
     background-color: #222;
-    height: 100%;
-    .mint-swipe-item{
-        background-color: #222;
-        height: 100%;
-        img{
-        width: 100%;
+    .recommend-content{
+        width:100%;
+        overflow:hidden;
+        >.slider-wrapper{
+            position: relative;
+            width: 100%;
+            overflow: hidden;
         }
     }
-    
+    .recommend-list{
+        >.list-title{
+            text-align: center;
+            font-weight: 300;
+            height: 65px;
+            line-height: 65px;
+            color:lightgreen;
+        }
+        .item{
+            display:flex;
+            box-sizing: border-box;
+            align-items: center;
+            padding:0 20px 20px 20px;
+            color:#fff;
+            >.icon{
+                flex: 0 0 60px;
+                width: 60px;
+                padding-right: 20px;
+            }
+            >.text{
+                display:flex;
+                flex-direction: column;
+                justify-content: center;
+                flex:1;
+                line-height: 20px;
+                overflow:hidden;
+                font-size: 14px;
+                >.name{
+                    padding-bottom: 10px;
+                    font-size: 16px;
+                }
+
+            }
+        }   
+    }
 }
+
 </style>

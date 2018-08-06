@@ -5,7 +5,7 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import Fastclick from 'fastclick'
-import axios from "axios";
+
 
 import MintUI from 'mint-ui'
 import 'mint-ui/lib/style.css'
@@ -13,8 +13,6 @@ import 'mint-ui/lib/style.css'
 Vue.use(MintUI)
 
 
-
-Vue.prototype.$axios = axios;
 
 // 引入css文件
 import  './common/base.css'
