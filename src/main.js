@@ -2,6 +2,7 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import "babel-polyfill"
 import Vue from 'vue'
+import store from './store/index'
 import App from './App'
 import router from './router'
 import Fastclick from 'fastclick'
@@ -29,6 +30,7 @@ Vue.config.productionTip = false
 new Vue({
   el: '#app',
   router,
+  store,
   components: { App },
   render: h=>h(App)
 })
