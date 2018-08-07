@@ -1,12 +1,14 @@
 <template>
     <div class="singer">
-        singer
+        <list-view :data="singerList" @select="selectSinger"></list-view>
+        <router-view></router-view>
     </div>
 </template>
 <script>
 import { getSingerList } from 'api/singer'
 import { ERR_OK } from 'api/config'
 import Singer from 'common/singer'
+import ListView from 'base/listview/listview'
 
 const HOT_SINGER_LEN = 10
 const HOT_NAME = '热门'
@@ -17,17 +19,19 @@ const HOT_NAME = '热门'
             }
         },
          methods:{
+             selectSinger(item){
+                 this.$router.push({
+                     path:`/singer/${item.id}`
+                 })
+             },
             _getSingerList(){
                 getSingerList().then((res)=>{
                     if(res.code == ERR_OK){
-                        this.singerList=res.data.list;
+                        this.singerList=this._normalizeSinger(res.data.list);
                     }
-                    console.log(this._normalizeSinger(this.singerList));
                 })
             },
             _normalizeSinger(list){
-                console.log(this.singerList);
-                
                 let map = {
                     hot:{
                         title:HOT_NAME,
@@ -58,6 +62,7 @@ const HOT_NAME = '热门'
                 let hot = [];
                 for(let key in map){
                     let val = map[key]
+                    // console.log(key)
                     if (val.title.match(/[a-zA-Z]/)) {
                         ret.push(val)
                     } else if (val.title === HOT_NAME) {
@@ -73,6 +78,9 @@ const HOT_NAME = '热门'
         },
         created(){
             this._getSingerList();
+        },
+        components:{
+            ListView
         }
    
     }
