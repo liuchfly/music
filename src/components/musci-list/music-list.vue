@@ -1,7 +1,7 @@
 <template>
     <div class="music-list">
         <div class="back" @click="goBack">
-            <i> < </i>
+            <i class="iconfont icon-fanhui"></i>
         </div>
         <h1 class="title" v-html="title"></h1>
         <div class="bg-image" :style="bgStyle" ref="bgImage">
@@ -11,7 +11,7 @@
         <div class="bg-layer" ref="bgLayer"></div>
         <scroll :data="songs" class="list" ref="list" @scroll="scroll" :listenScroll="listenScroll" :probeType="probeType">
             <div class="song-list-wrapper">
-                <song-list :songs="songs"></song-list>
+                <song-list :songs="songs" @select="selectItem"></song-list>
             </div>
         </scroll>
     </div>
@@ -19,6 +19,8 @@
 <script>
 import Scroll from 'base/scroll/scroll'
 import SongList from 'base/songlist/songlist'
+import { mapActions } from 'vuex'
+
 const RESERVED_HEIGHT = 40
 export default {
     props:{
@@ -67,7 +69,13 @@ export default {
             }
             this.$refs.bgImage.style.zIndex = zIndex;
             this.$refs.bgImage.style['transform'] = `scale(${scale})`;
-        }
+        },
+        selectItem(item,index){
+            this.selectPlay({list:this.songs,index:index});
+        },
+        ...mapActions([
+            'selectPlay'
+        ])
     },
     computed:{
         bgStyle(){
@@ -91,12 +99,16 @@ export default {
     background-color: #222;
     >.back{
         position:absolute;
-        top:5px;
+        top:10px;
         left:10px;
         z-index: 50;
-        font-size:30px;
-        color:#fff;
+        height: 20px;
+        width: 20px;
         font-weight: 700;
+        .icon-fanhui{
+            font-size:24px;
+            color:#fff;
+        }
     }
     >.title{
         position:absolute;

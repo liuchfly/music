@@ -74,10 +74,9 @@ export default {
             scrollY: false,
             momentum: false,
             snap:  {
-                loop:this.loop
+                loop:this.loop,
+                threshold: 0.1
             },
-            snapThreshold: 0.3,
-            snapSpeed: 400
             })
 
             this.slider.on('scrollEnd',()=>{

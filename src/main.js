@@ -21,12 +21,31 @@ Vue.use(MintUI)
 
 // 引入css文件
 import  './common/base.css'
+import  './common/font/iconfont.css'
 // 处理移动端300毫秒延时
 Fastclick.attach(document.body)
 
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */
+
+router.beforeEach((to, from, next) => {
+  const nextRouter = ['Search', 'Rank']
+  const isLogin = store.state.isLogin
+
+  if (nextRouter.indexOf(to.name) >= 0) {
+
+    if (!isLogin) {
+      next('Person');
+      return ;
+    }
+  }
+  next()
+
+  
+})
+
+
 new Vue({
   el: '#app',
   router,
