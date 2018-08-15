@@ -1,6 +1,12 @@
 <template>
     <div class="player" v-show="playList.length > 0">
-        <transition name="normal">
+        <transition 
+        name="normal"
+        @enter="enter"
+        @afterEnter="afterEnter"
+        @leave="leave"
+        @afterLeave="afterLeave"
+        >
             <div class="normal-player" v-show="fullScreen">
             <div class="background">
                 <img :src="currentSong.image" width="100%" height="100%" alt="">
@@ -13,9 +19,9 @@
                 <h2 class="subtitle" v-html="currentSong.singer"></h2>
             </div>
             <div class="middle">
-                <div class="middle-l">
-                    <div class="cd-wrapper">
-                        <div class="cd">
+                <div class="middle-l" >
+                    <div class="cd-wrapper" ref="cdWrapper">
+                        <div class="cd" :class="csCls">
                             <img class="image"  :src="currentSong.image" alt="">
                         </div>
                     </div>
@@ -45,7 +51,7 @@
                          <i class="iconfont icon-ai10"></i>
                     </div>
                     <div class="icon i-center" >
-                         <i class="iconfont icon-bofangqi-bofang"></i>
+                         <i :class="playicon" @click="togglePlaying"></i>
                     </div>
                     <div class="icon i-right" >
                          <i class="iconfont icon-ai09"></i>
@@ -58,8 +64,8 @@
         </div>
         </transition>
         <transition name="mini">
-            <div class="mini-player" v-show="!fullScreen" @click="fullscreen">
-                <div class="icon">
+            <div class="mini-player" v-show="!fullScreen" >
+                <div class="icon" @click="fullscreen" :class="csCls">
                     <img :src="currentSong.image" width="100%" height="100%" alt="">
                 </div>
                 <div class="text">
@@ -67,48 +73,124 @@
                     <p class="desc" v-html="currentSong.singer"></p>
                 </div>
                 <div class="control">
-                    <i class="iconfont icon-bofangqi-bofang"></i>
+                    <i :class="playicon" @click="togglePlaying"></i>
                 </div>
                 <div class="control">
                     <i class="iconfont icon-iconset0194"></i>
                 </div>
         </div>
         </transition>
-        
+        <audio ref="audio" :src="currentSong.url"></audio>
     </div>
 </template>
 <script>
 import { mapGetters ,mapMutations} from 'vuex'
 import ProgressBar from 'base/progress-bar/progress-bar'
+
+import animations from 'create-keyframe-animation'
+
 export default {
     computed:{
+        csCls(){
+            return this.playing ? 'play' : 'play pause'
+        },
+        playicon(){
+            return this.playing ? 'iconfont icon-bofangqi-zanting':'iconfont icon-bofangqi-bofang'
+        },
         ...mapGetters([
             'fullScreen',
             'playList',
-            'currentSong'
+            'currentSong',
+            'playing'
         ])
     },
     components:{
         ProgressBar,
     },
     methods:{
+        togglePlaying(){
+            this.setPlayState(!this.playing)
+        },
         back(){
             this.setFullScreen(false)
         },
         fullscreen(){
             this.setFullScreen(true)
         },
+        enter(el,done){
+            const {x,y,scale} = this._getLocation()
+
+            let animation = {
+                0:{
+                    transform:`translate3d(${x}px,${y}px,0) scale(${scale})`
+                },
+                60:{
+                     transform: `translate3d(0,0,0) scale(1.1)`
+                },
+                100:{
+                     transform: `translate3d(0,0,0) scale(1)`
+                }
+            }
+            animations.registerAnimation({
+                name:'move',
+                animation,
+                presets:{
+                    duration: 400,
+                    easing: 'linear'
+                }
+            })
+
+            animations.runAnimation(this.$refs.cdWrapper, 'move', done)
+        },
+        afterEnter(){
+             animations.unregisterAnimation('move')
+             this.$refs.cdWrapper.style.animation = ''
+        },
+        leave(el,done){
+            const {x,y,scale} = this._getLocation()
+            this.$refs.cdWrapper.style.transition="all 0.4s"
+            this.$refs.cdWrapper.style.transform=`translate3d(${x}px,${y}px,0) scale(${scale})`
+            this.$refs.cdWrapper.addEventListener('transitionend',done)
+
+        },
+        afterLeave(){
+            this.$refs.cdWrapper.style.transition=''
+            this.$refs.cdWrapper.style.transform=''
+        },
+        _getLocation(){
+            const paddingTop = 85;
+            const paddingLeft = 40;
+            const paddingBottom = 30;
+            const targetWidth = 40;
+            const width = window.innerWidth * 0.8
+            const scale = targetWidth/width
+            const x = -(window.innerWidth / 2 - paddingLeft)
+            const y = window.innerHeight - paddingTop - width / 2 - paddingBottom
+            return {
+                x,
+                y,
+                scale
+            }
+        },
         ...mapMutations({
-            setFullScreen:'SET_FULL_SCREEN'
+            setFullScreen:'SET_FULL_SCREEN',
+            setPlayState:'SET_PLAYING_STATE'
         })
     },
     mounted() {
-        console.log(111);
+        console.log(this.currentSong);
     },
     watch:{
         currentSong(){
-            console.log(this.currentSong);
-            
+            this.$nextTick(()=>{
+                 this.$refs.audio.play()
+            })
+        },
+        playing(newplay){
+            this.$nextTick(()=>{
+                const audo = this.$refs.audio
+                newplay ? audo.play() : audo.pause()
+            })
         }
     },
     
@@ -199,7 +281,14 @@ export default {
                             height:100%;
                             border-radius: 50%;
                         }
+                        &.play{
+                        animation: cdCls 20s linear infinite;
+                        }
+                        &.pause{
+                            animation-play-state: paused
+                        }
                     }
+                    
                 }
 
             }
@@ -274,7 +363,7 @@ export default {
             }
         }
         &.normal-enter,&.normal-leave-to{
-            opacity: 0;
+            opacity: 1;
             .top{
                 transform: translate3d(0,-100%,0)
             }
@@ -300,6 +389,12 @@ export default {
           padding:0 10px 0 20px;
           img{
               border-radius: 50%;
+          }
+          &.play{
+              animation: cdCls 20s linear infinite;
+          }
+          &.pause{
+              animation-play-state: paused
           }
         }
         >.text{
@@ -335,6 +430,14 @@ export default {
             opacity: 0;
         }
         
+    }
+}
+@keyframes cdCls {
+    0% {
+        transform: rotateZ(0deg)
+    }
+    100% {
+        transform: rotateZ(360deg)
     }
 }
 
