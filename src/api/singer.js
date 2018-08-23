@@ -12,7 +12,8 @@ export function getSingerList(){
         pagenum: 1,
         hostUin: 0,
         needNewCode: 0,
-        platform: 'yqq'
+        platform: 'yqq',
+        hello:'111'
     })
     // const option = {param:'callback'}
     return jsonp(url, data, options)
